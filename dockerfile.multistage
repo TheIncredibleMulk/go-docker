@@ -1,0 +1,47 @@
+# Dockerfile References: https://docs.docker.com/engine/reference/builder/
+
+# Start from the latest golang base image
+FROM golang:latest as builder
+
+# Add Maintainer Info
+LABEL Maintainer="TheIncredibleMulk <andrew.mulkey@gmail.com"
+
+# Set the current Working Directory in the Container
+WORKDIR /app
+
+# Copy go mod and sum files to the working directory
+COPY go.mod go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Copy the source from the current direcotry to the Working Directory inside the container
+COPY . .
+
+# Build the Go App
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+################### Start a new stage from scratch   ##################
+
+from alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the Pre-built binary from previous stage
+COPY --from=builder /app/main .
+
+# Expose Port to the outside world
+EXPOSE 8080
+
+# Command to run the Executable
+CMD [ "./main" ]
+
+
+
+# Expose port 8080 to the outside of the container
+EXPOSE 8080
+
+# Command to run on start up
+CMD ["./main"]
