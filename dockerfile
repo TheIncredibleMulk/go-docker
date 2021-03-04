@@ -9,6 +9,15 @@ LABEL Maintainer="TheIncredibleMulk <andrew.mulkey@gmail.com"
 # Set the current Working Directory in the Container
 WORKDIR /app
 
+# Build Args
+ARG LOG_DIR=/app/logs
+
+# Create Log Directory
+RUN mkdir -p ${LOG_DIR}
+
+# Enviorment Variables
+ENV LOG_FILE_LOCATION=${LOG_DIR}/app.log
+
 # Copy go mod and sum files to the working directory
 COPY go.mod go.sum ./
 
